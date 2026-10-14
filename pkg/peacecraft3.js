@@ -732,7 +732,7 @@ function __wbg_get_imports() {
         __wbg_clear_cb96796cc568b7c8: function(arg0, arg1) {
             arg0.clear(arg1 >>> 0);
         },
-        __wbg_click_12dbe1f94fa18738: function() {
+        __wbg_click_a06c4e15d0fe32f3: function() {
             peacecraft3Audio.click();
         },
         __wbg_clientWaitSync_73122aa040ce343d: function(arg0, arg1, arg2, arg3) {
@@ -1092,7 +1092,7 @@ function __wbg_get_imports() {
         __wbg_error_a30e98d44009f1bb: function(arg0, arg1) {
             console.error(arg0, arg1);
         },
-        __wbg_event_7ba1cb6623c0a2f4: function(arg0, arg1, arg2) {
+        __wbg_event_c67f59699f0a8db3: function(arg0, arg1, arg2) {
             peacecraft3Audio.event(getArrayU8FromWasm0(arg0, arg1), arg2);
         },
         __wbg_exec_a5f4ba02713fbebe: function(arg0, arg1, arg2) {
@@ -1627,13 +1627,13 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         }, arguments); },
-        __wbg_play_3997a1be51d27925: function(arg0) {
-            arg0.play();
-        },
-        __wbg_play_f961675605710698: function() { return handleError(function (arg0) {
+        __wbg_play_1aa7dbf14cc2a303: function() { return handleError(function (arg0) {
             const ret = peacecraft3Intro.play(arg0 !== 0);
             return ret;
         }, arguments); },
+        __wbg_play_3997a1be51d27925: function(arg0) {
+            arg0.play();
+        },
         __wbg_pointerId_1b91f6b6c8f92501: function(arg0) {
             const ret = arg0.pointerId;
             return ret;
@@ -1956,7 +1956,7 @@ function __wbg_get_imports() {
             const ret = arg0.style;
             return ret;
         },
-        __wbg_take_finished_bc22ee4fa1e05df4: function() { return handleError(function () {
+        __wbg_take_finished_0c66d08c2d7e8a8d: function() { return handleError(function () {
             const ret = peacecraft3Intro.take_finished();
             return ret;
         }, arguments); },
