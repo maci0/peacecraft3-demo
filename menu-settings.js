@@ -6,23 +6,41 @@ function bounded(text, limit) {
     throw new RangeError('Settings exceed the preference byte limit');
   return text;
 }
+function acceptedMode(width, height) {
+  return Number.isInteger(width) && Number.isInteger(height) && width > 0 && height > 0 &&
+    width <= 0xffffffff && height <= 0xffffffff;
+}
+function physicalPixels(cssWidth, cssHeight) {
+  const ratio = globalThis.devicePixelRatio;
+  if (!Number.isFinite(ratio) || ratio <= 0) return null;
+  const width = Math.round(cssWidth * ratio);
+  const height = Math.round(cssHeight * ratio);
+  return acceptedMode(width, height) ? [width, height] : null;
+}
 globalThis.peacecraft3Settings = {
   displayModes() {
     const modes = [];
     const add = (width, height) => {
-      if (Number.isInteger(width) && Number.isInteger(height) && width > 0 && height > 0 &&
-          width <= 0xffffffff && height <= 0xffffffff && !modes.some(mode => mode[0] === width && mode[1] === height))
+      if (acceptedMode(width, height) && !modes.some(mode => mode[0] === width && mode[1] === height))
         modes.push([width, height]);
     };
-    const ratio = globalThis.devicePixelRatio;
-    if (Number.isFinite(ratio) && ratio > 0) {
-      // The preview's content box remains measurable when a selected canvas mode
-      // changes. Do not treat the canvas's temporary startup bitmap as a mode.
-      const stage = document.querySelector('#stage');
-      if (stage) add(Math.round(stage.clientWidth * ratio), Math.round(stage.clientHeight * ratio));
-      if (globalThis.screen) add(Math.round(screen.width * ratio), Math.round(screen.height * ratio));
+    // The preview's content box remains measurable when a selected canvas mode
+    // changes. Do not treat the canvas's temporary startup bitmap as a mode.
+    const stage = document.querySelector('#stage');
+    if (stage) {
+      const size = physicalPixels(stage.clientWidth, stage.clientHeight);
+      if (size) add(size[0], size[1]);
+    }
+    if (globalThis.screen) {
+      const size = physicalPixels(screen.width, screen.height);
+      if (size) add(size[0], size[1]);
     }
     return JSON.stringify(modes);
+  },
+  // One physical screen rectangle. This is not a displayModes entry.
+  screenBound() {
+    if (!globalThis.screen) return 'null';
+    return JSON.stringify(physicalPixels(screen.width, screen.height));
   },
   resumeParentSizing() {
     const canvas = document.querySelector('#launcher-canvas');
@@ -52,6 +70,12 @@ function fitPreview() {
   const width = canvas.clientWidth, height = canvas.clientHeight;
   const availableWidth = stage.clientWidth, availableHeight = stage.clientHeight;
   if (![width, height, availableWidth, availableHeight].every(value => Number.isFinite(value) && value > 0)) return;
+  const ratio = globalThis.devicePixelRatio;
+  if (Number.isFinite(ratio) && ratio > 0) {
+    // Fractional page layout must not crop a viewport-sized canvas after scrolling.
+    const naturalTop = stage.getBoundingClientRect().top - (Number.parseFloat(stage.style.top) || 0);
+    if (Number.isFinite(naturalTop)) stage.style.top = `${Math.round(naturalTop * ratio) / ratio - naturalTop}px`;
+  }
   const actual = stage.dataset.previewSize === 'actual';
   const scale = actual ? 1 : Math.min(1, availableWidth / width, availableHeight / height);
   const x = actual ? 0 : (availableWidth - width * scale) / 2;
@@ -68,6 +92,13 @@ if (typeof ResizeObserver === 'function') {
 
 const previewSize = document.querySelector('#preview-size');
 const previewStage = document.querySelector('#stage');
+const previewCanvas = document.querySelector('#launcher-canvas');
+if (previewStage && previewCanvas) {
+  previewCanvas.addEventListener('focus', () => {
+    fitPreview();
+    previewStage.scrollIntoView({block: 'start', behavior: 'instant'});
+  });
+}
 if (previewSize && previewStage) {
   previewSize.addEventListener('click', () => {
     const actual = previewStage.dataset.previewSize !== 'actual';
